@@ -1,0 +1,31 @@
+﻿
+namespace Assignment1
+{
+    internal class TwoSum
+    {
+        // take 2 numbers from console input and add them together and print the result
+        static void Main()
+        {
+            new TwoSum();
+        }
+        public TwoSum()
+        {
+            Console.Write("Enter first number: ");
+            string? input = Console.ReadLine();
+            if (!int.TryParse(input, out int num1))
+            {
+                Console.WriteLine("Invalid input!");
+                return;
+            }
+            Console.Write("Enter second number: ");
+            string? input2 = Console.ReadLine();
+            if (!int.TryParse(input2, out int num2))
+            {
+                Console.WriteLine("Invalid input!");
+                return;
+            }
+            int sum = num1 + num2;
+            Console.WriteLine("The sum of {0} and {1} is: {2}", num1, num2, sum);
+        }
+    }
+}

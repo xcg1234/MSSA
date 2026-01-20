@@ -1,0 +1,61 @@
+﻿//1. Create a console application in C# to store and print personal details of a person like name,
+//age and address on console screen. Make use of appropriate variables.
+
+namespace Assignment1
+{
+    internal class Program
+    {
+        private static void Main()
+        {
+            string name;
+            int age;
+            string address;
+
+            // Get user input for personal details
+            Console.Write("Enter your name: ");
+            name = Console.ReadLine() ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                Console.WriteLine("Name cannot be empty. Please enter a valid name.");
+                return;
+            }
+            Console.Write("Enter your age: ");
+            string? ageInput = Console.ReadLine();
+            if (string.IsNullOrWhiteSpace(ageInput))
+            {
+                Console.WriteLine("Age input cannot be empty. Please enter a valid age.");
+                return;
+            }
+            if (!int.TryParse(ageInput, out age) || age < 0)
+            {
+                Console.WriteLine("Please enter a valid numeric age.");
+                return;
+            }
+            Console.Write("Enter your address: ");
+
+
+
+            string addressINput = Console.ReadLine() ?? string.Empty;
+
+            if (string.IsNullOrWhiteSpace(addressINput))
+            {
+                Console.WriteLine("Address cannot be empty. Please enter a valid address.");
+                return;
+            }
+            if (!string.IsNullOrEmpty(addressINput) && addressINput.Length < 5
+                // or the address is pure numbers which is not allowed
+                || int.TryParse(addressINput, out _)
+                )
+            {
+                Console.WriteLine("Address seems too short or the address is pure number. Please enter a valid address.");
+                return;
+            }
+            address = addressINput;
+            // Print personal details on console screen
+            Console.WriteLine("\nPersonal Details:");
+            Console.WriteLine($"Name: {name}");
+            Console.WriteLine($"Age: {age}");
+            Console.WriteLine($"Address: {address}");
+        }
+    }
+}

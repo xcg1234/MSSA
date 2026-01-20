@@ -1,0 +1,36 @@
+﻿namespace Assignment1_4
+{
+    internal class Student
+    {
+        private int StudentId;
+        private string StudentFName;
+        private string StudentLname;
+        private char StudentGrade;
+
+
+        //public properties for each data member
+        public int studentId
+        {
+            get { return StudentId; }
+            set { StudentId = value; }
+        }
+
+        public string studentFName
+        {
+            get { return StudentFName; }
+            set { StudentFName = value; }
+        }
+
+        public string studentLname
+        {
+            get { return StudentLname; }
+            set { StudentLname = value; }
+        }
+
+        public char studentGrade
+        {
+            get { return StudentGrade; }
+            set { StudentGrade = value; }
+        }
+    }
+}

@@ -1,0 +1,28 @@
+﻿
+int num1, num2, quotient, remainder;
+Console.Write("Enter first number: ");
+string? input = Console.ReadLine();
+if (!int.TryParse(input, out num1))
+{
+    Console.WriteLine("Invalid input!");
+    return;
+}
+// Second number input from console, validate it and store as num2
+Console.Write("Enter second number: ");
+string? input2 = Console.ReadLine();
+if (!int.TryParse(input2, out num2))
+{
+    Console.WriteLine("Invalid input!");
+    return;
+}
+if (num2 == 0)
+{
+    Console.WriteLine("Error: Cannot divide by zero.");
+    return;
+}
+// Calculate quotient and remainder of num1 divided by num2
+quotient = num1 / num2;
+remainder = num1 % num2;
+// Print the results
+Console.WriteLine("The quotient of {0} divided by {1} is: {2}", num1, num2, quotient);
+Console.WriteLine("The remainder of {0} divided by {1} is: {2}", num1, num2, remainder);

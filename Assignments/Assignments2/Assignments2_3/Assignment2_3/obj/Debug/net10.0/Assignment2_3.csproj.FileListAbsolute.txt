@@ -1,0 +1,14 @@
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\bin\Debug\net10.0\Assignment2_3.exe
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\bin\Debug\net10.0\Assignment2_3.deps.json
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\bin\Debug\net10.0\Assignment2_3.runtimeconfig.json
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\bin\Debug\net10.0\Assignment2_3.dll
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\bin\Debug\net10.0\Assignment2_3.pdb
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\Assignment2_3.GeneratedMSBuildEditorConfig.editorconfig
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\Assignment2_3.AssemblyInfoInputs.cache
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\Assignment2_3.AssemblyInfo.cs
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\Assignment2_3.csproj.CoreCompileInputs.cache
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\Assignment2_3.dll
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\refint\Assignment2_3.dll
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\Assignment2_3.pdb
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\Assignment2_3.genruntimeconfig.cache
+C:\MSSA\Assignments\Assignments2\Assignments2_3\Assignment2_3\obj\Debug\net10.0\ref\Assignment2_3.dll

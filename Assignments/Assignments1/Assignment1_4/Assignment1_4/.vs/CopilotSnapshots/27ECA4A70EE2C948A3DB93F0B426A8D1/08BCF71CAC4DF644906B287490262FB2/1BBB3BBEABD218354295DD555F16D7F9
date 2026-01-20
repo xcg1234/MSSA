@@ -1,0 +1,110 @@
+﻿namespace Assignment1_4
+{
+    internal class Student
+    {
+        public static int StudentId;
+        public static string studentFName = string.Empty;
+        public static string studentLname = string.Empty;
+        private static char studentGrade;
+
+        public Student()
+        {
+            Student.StudentId = 0;
+            Student.studentFName = string.Empty;
+            Student.studentLname = string.Empty;
+            Student.studentGrade = 'F';
+        }
+
+
+        // public properties for each data member
+        public int StudentID
+        {
+            get { return StudentId; }
+            set
+            {
+                Console.WriteLine("Enter Student ID:");
+                string? input = Console.ReadLine();
+                if (int.TryParse(input, out int id))
+                {
+                    StudentId = id;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input for Student ID. Setting to default value 0.");
+                    StudentId = 0;
+                }
+            }
+        }
+
+        public string StudentFName
+        {
+            get { return studentFName; }
+            set
+            {
+                Console.WriteLine("Enter Student First Name:");
+                string? fNameInput = Console.ReadLine();
+                if (!string.IsNullOrEmpty(fNameInput))
+                {
+                    studentFName = fNameInput;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input for Student First Name.");
+                    return;
+                }
+            }
+        }
+
+        public string StudentLname
+        {
+            get { return studentLname; }
+            set
+            {
+                Console.WriteLine("Enter Student Last Name:");
+                string? lNameInput = Console.ReadLine();
+                if (!string.IsNullOrEmpty(lNameInput))
+                {
+                    studentLname = lNameInput;
+                }
+                else
+                {
+                    Console.WriteLine("Invalid input for Student Last Name.");
+                    return;
+                }
+            }
+        }
+
+        public char StudentGrade
+        {
+            get { return studentGrade; }
+            set
+            {
+                Console.WriteLine("Enter Student Grade (A-F):");
+                string? gradeInput = Console.ReadLine();
+                // if input is  number or other than A-F and a-f then it's invalid input
+                if (!string.IsNullOrEmpty(gradeInput))
+                {
+                    if (char.TryParse(gradeInput, out char grade))
+                    {
+                        if (grade >= 'A' && grade <= 'F' || grade >= 'a' && grade <= 'f')
+                        {
+                            studentGrade = char.ToUpper(grade);
+                        }
+                        else
+                        {
+                            Console.WriteLine("Invalid input for Student Grade. Setting to default value 'F'.");
+                            studentGrade = 'F';
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Invalid input for Student Grade. Setting to default value 'F'.");
+                        studentGrade = 'F';
+                    }
+                }
+            }
+        }
+
+
+    }
+}

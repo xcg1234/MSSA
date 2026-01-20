@@ -1,0 +1,139 @@
+﻿namespace Assignment1_3
+{
+    internal class Program
+    {
+        static void Main(string[] args)
+        {
+            while (true)
+            {//ask user to choose between calculating area or reversing an array
+            Console.WriteLine("Choose an option:");
+            Console.WriteLine("1. Calculate area of a shape");
+            Console.WriteLine("2. Reverse an array of random numbers");
+            Console.WriteLine("3. Exit");
+            string? option = Console.ReadLine();
+                if (int.TryParse(option, out int choice) && choice >= 1 && choice <= 3)
+                {
+                    switch (choice)
+                    {
+                        case 1:
+                            CalculateArea();
+                            break;
+                        case 2:
+                            ReverseintArray();
+                            break;
+                        case 3:
+                            // Exit option
+                            Console.WriteLine("Exiting the program.");
+                            return;
+                    }
+                }
+                
+            }
+        }
+
+        private static decimal CalculateArea()
+        {
+            //creating console menu ask for triangle square or rectangle
+            Console.WriteLine("Choose a shape to calculate the area:");
+            Console.WriteLine("1. Triangle");
+            Console.WriteLine("2. Square");
+            Console.WriteLine("3. Rectangle");
+            Console.WriteLine("4. Exit");
+            string? choice = Console.ReadLine();
+            //verify if the input is number and between 1 and 4
+            if (int.TryParse(choice, out int shape) && shape >= 1 && shape <= 4)
+            {
+                switch (shape)
+                {
+                    case 1:
+                        Console.WriteLine("Enter the base of the triangle:");
+
+                        string? input = Console.ReadLine();
+                        if (!decimal.TryParse(input, out decimal baseTriangle) || baseTriangle <= 0)
+                        {
+                            Console.WriteLine("Base must be a positive number.");
+                            return 0;
+                        }
+
+                        Console.WriteLine("Enter the height of the triangle:");
+                        string? heightInput = Console.ReadLine();
+
+                        if (!decimal.TryParse(heightInput, out decimal heightTriangle) || heightTriangle <= 0)
+                        {
+                            Console.WriteLine("Height must be a positive number.");
+                            return 0;
+                        }
+                        Console.WriteLine($"The area of the triangle is: {(baseTriangle * heightTriangle) / 2}");
+                        return (baseTriangle * heightTriangle) / 2;
+
+                    case 2:
+                        Console.WriteLine("Enter the side of the square:");
+                        string? sideInput = Console.ReadLine();
+
+                        if (!decimal.TryParse(sideInput, out decimal sideSquare) || sideSquare <= 0)
+                        {
+                            Console.WriteLine("Invalid input");
+                            return 0;
+                        }
+
+                        Console.WriteLine($"The area of the square is: {sideSquare * sideSquare}");
+                        return sideSquare * sideSquare;
+
+                    case 3:
+                        Console.WriteLine("Enter the length of the rectangle:");
+                        string? lengthInput = Console.ReadLine();
+
+                        if (!decimal.TryParse(lengthInput, out decimal lengthRectangle) || lengthRectangle <= 0)
+                        {
+                            Console.WriteLine("Length must be a positive number.");
+                            return 0;
+                        }
+
+                        Console.WriteLine("Enter the width of the rectangle:");
+                        string? widthInput = Console.ReadLine();
+
+                        if (!decimal.TryParse(widthInput, out decimal widthRectangle) || widthRectangle <= 0)
+                        {
+                            Console.WriteLine("Width must be a positive number.");
+                            return 0;
+                        }
+                        Console.WriteLine($"The area of the rectangle is: {lengthRectangle * widthRectangle}");
+                        return lengthRectangle * widthRectangle;
+                    case 4:
+                        // Exit option
+                        return 0;
+                }
+            }
+            else
+            {
+                Console.WriteLine("Invalid input. Please enter a number between 1 and 4.");
+            }
+            return 0;
+        }
+
+
+        // create an int array with 5 random numbers and reverse it.
+        private static void ReverseintArray()
+        {
+            int[] randomNumbers = new int[5];
+            Random rand = new Random();
+            for (int i = 0; i < randomNumbers.Length; i++)
+            {
+                randomNumbers[i] = rand.Next(1, 100); 
+            }
+            Console.WriteLine("Original array with random 5 numbers: " + string.Join(", ", randomNumbers));
+            //manually reverse the array, using typical two-pointer approach.
+            int left = 0;
+            int right = randomNumbers.Length - 1;
+            while (left < right)
+            {
+                int temp = randomNumbers[left];
+                randomNumbers[left] = randomNumbers[right];
+                randomNumbers[right] = temp;
+                left++;
+                right--;
+            }
+            Console.WriteLine("Reversed array: " + string.Join(", ", randomNumbers));
+        }
+    }
+}
