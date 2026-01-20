@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\MSSA\\Assignments\\Assignment2_2\\Assignment2_2\\Assignment2_2\\Assignment2_2\\Assignment2_2.csproj",
+      "projectUniqueName": "C:\\MSSA\\Assignments\\Assignments2\\Assignment2_2\\Assignment2_2\\Assignment2_2.csproj",
       "projectName": "Assignment2_2",
-      "projectPath": "C:\\MSSA\\Assignments\\Assignment2_2\\Assignment2_2\\Assignment2_2\\Assignment2_2\\Assignment2_2.csproj",
+      "projectPath": "C:\\MSSA\\Assignments\\Assignments2\\Assignment2_2\\Assignment2_2\\Assignment2_2.csproj",
       "packagesPath": "C:\\Users\\wrn2d\\.nuget\\packages\\",
-      "outputPath": "C:\\MSSA\\Assignments\\Assignment2_2\\Assignment2_2\\Assignment2_2\\Assignment2_2\\obj\\",
+      "outputPath": "C:\\MSSA\\Assignments\\Assignments2\\Assignment2_2\\Assignment2_2\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"

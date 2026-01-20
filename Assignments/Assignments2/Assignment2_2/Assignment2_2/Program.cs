@@ -3,42 +3,31 @@
 }
 
 class Dog : Pet{
-    public override void Speak(){
-        System.Console.WriteLine("Woof!");
-    }
+    public override void Speak() => Console.WriteLine("Woof!");
 }
+
 class Hound : Dog{
-    public override void Speak(){
-        System.Console.WriteLine("Woof! Woof!");
-    }
+    public override void Speak() => Console.WriteLine("Woof! Woof!");
 }
+
 class Terrier : Dog{
-    public override void Speak(){
-        System.Console.WriteLine("Yap! Yap!");
-    }
+    public override void Speak() => Console.WriteLine("Yap! Yap!");
 }
+
 class Working : Pet{
-    public override void Speak(){
-        System.Console.WriteLine("Grrr!");
-    }
+    public override void Speak() => Console.WriteLine("Grrr!");
 }
 
 class Beagle : Hound{
-    public override void Speak(){
-        System.Console.WriteLine("Aroo! Aroo!");
-    }
+    public override void Speak() => Console.WriteLine("Aroo! Aroo!");
 }
 
 class WelshTerrier : Terrier{
-    public override void Speak(){
-        System.Console.WriteLine("Yip! Yip!");
-    }
+    public override void Speak() => Console.WriteLine("Yip! Yip!");
 }
 
 class Boxer: Working{
-    public override void Speak(){
-        System.Console.WriteLine("Woof! Grrr!");
-    }
+    public override void Speak() => Console.WriteLine("Woof! Grrr!");
 }
 class Program{
     static void Main(string[] args){
