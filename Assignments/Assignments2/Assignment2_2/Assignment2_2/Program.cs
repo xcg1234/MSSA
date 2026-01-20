@@ -1,35 +1,4 @@
-﻿public abstract class Pet{
-    public abstract void Speak();
-}
-
-class Dog : Pet{
-    public override void Speak() => Console.WriteLine("Woof!");
-}
-
-class Hound : Dog{
-    public override void Speak() => Console.WriteLine("Woof! Woof!");
-}
-
-class Terrier : Dog{
-    public override void Speak() => Console.WriteLine("Yap! Yap!");
-}
-
-class Working : Pet{
-    public override void Speak() => Console.WriteLine("Grrr!");
-}
-
-class Beagle : Hound{
-    public override void Speak() => Console.WriteLine("Aroo! Aroo!");
-}
-
-class WelshTerrier : Terrier{
-    public override void Speak() => Console.WriteLine("Yip! Yip!");
-}
-
-class Boxer: Working{
-    public override void Speak() => Console.WriteLine("Woof! Grrr!");
-}
-class Program{
+﻿class Program{
     static void Main(string[] args){
         Console.WriteLine("=== Pet Demo ===");
         Pet myPet1 = new Beagle();
@@ -102,6 +71,9 @@ class Program{
         {
             Console.WriteLine("Invalid choice. Please select 1 or 2.");
         }
+
+        Console.WriteLine("\nPress any key to exit...");
+        Console.ReadKey();
     }
 
 
