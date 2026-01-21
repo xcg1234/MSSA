@@ -1,37 +1,31 @@
-﻿//1. Write a console application to create a text file and save your basic details like name, age, address ( use dummy data). Read the details from same file and print on console.
+﻿using System.IO;
 
-using System;
-using System.IO;
-class Program
+// 1. Setup path and dummy data
+string filePath = "UserDetails.txt";
+string name = "John Doe";
+int age = 30;
+string address = "123 Main St, Anytown, USA";
+
+// 2. Prepare the data array
+string[] details = {
+    $"Name: {name}",
+    $"Age: {age}",
+    $"Address: {address}"
+};
+
+// 3. Write all lines at once (automatically handles opening/closing)
+File.WriteAllLines(filePath, details);
+Console.WriteLine("File written successfully.\n");
+
+// 4. Read and print
+if (File.Exists(filePath))
 {
-    static void Main(string[] args)
+    string[] readDetails = File.ReadAllLines(filePath);
+    foreach (string line in readDetails)
     {
-        string filePath = "UserDetails.txt";
-
-        // Dummy data
-        string name = "John Doe";
-        int age = 30;
-        string address = "123 Main St, Anytown, USA";
-
-        // Write details to file
-        using (StreamWriter writer = new StreamWriter(filePath))
-        {
-            writer.WriteLine("Name: " + name);
-            writer.WriteLine("Age: " + age);
-            writer.WriteLine("Address: " + address);
-        }
-
-        // Read details from file and print to console
-        using (StreamReader reader = new StreamReader(filePath))
-        {
-            string line;
-            while ((line = reader.ReadLine()) != null)
-            {
-                Console.WriteLine(line);
-            }
-        }
-
-        Console.WriteLine("\nPress any key to exit...");
-        Console.ReadKey();
+        Console.WriteLine(line);
     }
 }
+
+Console.WriteLine("\nPress any key to exit...");
+Console.ReadKey();
