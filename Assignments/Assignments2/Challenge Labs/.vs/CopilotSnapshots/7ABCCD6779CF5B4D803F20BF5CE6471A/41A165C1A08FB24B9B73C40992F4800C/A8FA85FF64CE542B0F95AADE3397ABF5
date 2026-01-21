@@ -1,0 +1,34 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Threading.Channels;
+
+namespace Challenge_Labs
+{
+    internal class TemperatureReader
+    {
+        //take user input in Fehrenheit and output messages based on the temperature range
+        //Temp 0< 10 then Freezing weather
+        //Temp 11-20 then Very Cold weather
+        //Temp 21-35 then Cold weather
+        //Temp 36-50 then Normal in Weather
+        //Temp 51-65 then Its Hot
+        //Temp 66-80 then Its Very Hot
+
+        Console.WriteLine("Enter the temperature in Fahrenheit:");
+        string? input = Console.ReadLine();
+        if (int.TryParse(input, out temperature)
+        {
+            //using switch expression
+            string message = temperature switch
+            {
+                <= 10 => "Freezing weather",
+                <= 20 => "Very Cold weather",
+                <= 35 => "Cold weather",
+                <= 50 => "Normal in Weather",
+                <= 65 => "It's Hot",
+                _ => "It's Very Hot"
+            };
+        }
+    }
+}
