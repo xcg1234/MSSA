@@ -3,3 +3,5 @@
 ################################################################################
 
 /.vs
+*.cache
+/Assignments/Assignments2/Assignments2_3/Assignment2_3/obj

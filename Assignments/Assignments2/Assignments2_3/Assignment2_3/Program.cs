@@ -30,44 +30,5 @@ class Program
                 Console.WriteLine(line);
             }
         }
-
-        Console.WriteLine("Following demostration is for the tip calculator:");
-
-        //ask user for bill amount
-        Console.Write("Enter the bill amount: ");
-        string? billInput = Console.ReadLine();
-        //sanitize the input to make sure it's number not characters
-        if (!decimal.TryParse(billInput, out decimal billAmount))
-        {
-            Console.WriteLine("Invalid bill amount. Please enter a valid number.");
-            Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
-            return;
-        }
-        //ask user for tip percentage
-        Console.Write("Enter the tip percentage: ");
-        string? tipInput = Console.ReadLine();
-        //sanitize the input to make sure it's number not characters
-        if (!decimal.TryParse(tipInput, out decimal tipPercentage))
-        {
-            Console.WriteLine("Invalid tip percentage. Please enter a valid number.");
-            Console.WriteLine("\nPress any key to exit...");
-            Console.ReadKey();
-            return;
-        }
-        //create an instance of TipCalculator
-        TipCalculator tipCalculator = new TipCalculator(billAmount, tipPercentage);
-        try
-        {
-            decimal tipAmount = tipCalculator.CalculateTip();
-            Console.WriteLine($"The tip amount is: {tipAmount:C}");
-        }
-        catch (ArgumentException ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-
-        Console.WriteLine("\nPress any key to exit...");
-        Console.ReadKey();
     }
 }
