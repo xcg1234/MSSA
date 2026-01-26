@@ -87,12 +87,24 @@ namespace Assignment3_1
                 
             }
             //print the array
-            Console.WriteLine("Modified array: " + string.Join(", ", arr));
+            Console.WriteLine($"Modified array: [{string.Join(", ", arr)}]");
 
         }
 
     }
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
