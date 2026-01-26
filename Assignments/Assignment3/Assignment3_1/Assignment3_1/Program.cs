@@ -61,7 +61,7 @@ namespace Assignment3_1
                 Console.WriteLine("String is empty or null.");
                 return;
             }
-
+            input.Trim();
             int spaceCount = 0;
             foreach (char c in input)
             {
