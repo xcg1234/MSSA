@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Assignments6._2
+﻿namespace Assignments6._2
 {
     public class ProductExceptSelf
     {
@@ -33,4 +29,4 @@ namespace Assignments6._2
             // and then multiplying by the right products on the fly,but this is more straightforward to understand
         }
     }
-    }
+}
