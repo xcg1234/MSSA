@@ -12,14 +12,15 @@ namespace StravaWinForm.Services
         private readonly string _clientId;
         private readonly string _clientSecret;
         private readonly string _redirectUri;
-        private const string TokenFilePath = "strava_tokens.dat"; // 改为 .dat 表示加密数据
-        
-        // ✅ 优化1: 静态只读字段，避免重复创建
+        private const string TokenFilePath = "strava_tokens.dat"; // using .dat to indicate it's encrypted
+
+        // setting an empty JsonSerializerOptions to avoid repeated creation
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
            
         };
 
+        // constructor with parameters for client ID, secret, and redirect URI
         public StravaAuthService(string clientId, string clientSecret, string redirectUri)
         {
             _clientId = clientId;
@@ -27,19 +28,25 @@ namespace StravaWinForm.Services
             _redirectUri = redirectUri;
         }
 
+
+        // Asyc method to get authorization code,
+        // using HttpListener to handle the redirect and capture the code
+        // https://learn.microsoft.com/en-us/dotnet/csharp/asynchronous-programming/
         public async Task<string> GetAuthorizationCodeAsync(CancellationToken cancellationToken = default)
         {
             string scope = "read,activity:read_all";
             string authUrl = $"https://www.strava.com/oauth/authorize?client_id={_clientId}&redirect_uri={_redirectUri}&response_type=code&approval_prompt=force&scope={scope}";
 
             using HttpListener listener = new HttpListener();
+            //listen to the 8080 port which was set in the strava API settings, and wait for the redirect with the code
             listener.Prefixes.Add(_redirectUri);
             listener.Start();
 
             try
-            {
+            {   //asking browser to open the authorization URL, which will redirect back to our listener with the code
                 Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
-                
+
+                // Wait for the incoming request with the authorization code, and handle cancellation
                 HttpListenerContext context = await listener.GetContextAsync().WaitAsync(cancellationToken);
                 
                 string? error = context.Request.QueryString["error"];
@@ -74,7 +81,7 @@ namespace StravaWinForm.Services
             var response = await client.PostAsync("https://www.strava.com/oauth/token", content);
 
             if (response.IsSuccessStatusCode)
-            {
+            {   //get the json response, deserialize it to StravaTokenResponse, save the tokens, and return the token response
                 var json = await response.Content.ReadAsStringAsync();
                 var tokenResponse = JsonSerializer.Deserialize<StravaTokenResponse>(json);
 
@@ -133,30 +140,30 @@ namespace StravaWinForm.Services
             return tokens.access_token;
         }
 
-        // ✅ 优化版本：异步 + 加密 + 使用静态 JsonOptions
+        
         private async Task SaveTokensAsync(StravaTokenResponse? tokens)
         {
             if (tokens == null) return;
 
             try
             {
-                // 使用静态的 JsonOptions，避免重复创建
+                // using static JsonSerializerOptions to avoid repeated creation, and serialize the tokens to JSON
                 var json = JsonSerializer.Serialize(tokens, JsonOptions);
                 var data = Encoding.UTF8.GetBytes(json);
-                
-                // ✅ 优化3: 使用 DPAPI 加密（仅当前用户可解密）
+
+                // using Windows Data Protection API to encrypt the token data, which will be tied to the current user and machine
                 var encryptedData = ProtectedData.Protect(
                     data,
                     null,
                     DataProtectionScope.CurrentUser);
-                
-                // ✅ 优化4: 异步写入
+
+                // writing the encrypted data to a file asynchronously, which will be used to store the tokens securely
                 await File.WriteAllBytesAsync(TokenFilePath, encryptedData);
             }
             catch (Exception ex)
             {
                 Debug.WriteLine($"Failed to save tokens: {ex.Message}");
-                // 可以选择重新抛出或记录日志
+                
             }
         }
 
@@ -167,11 +174,12 @@ namespace StravaWinForm.Services
 
             try
             {
-                // 异步读取加密数据
+                // loading the encrypted token data from the file asynchronously, which will be used to retrieve the tokens
                 var encryptedData = await File.ReadAllBytesAsync(TokenFilePath);
-                
 
-                // 解密
+
+                // decrypting the data using Windows Data Protection API,
+                // which will only succeed if the data was encrypted on the same machine and user account
                 var data = ProtectedData.Unprotect(
                     encryptedData,
                     null,
