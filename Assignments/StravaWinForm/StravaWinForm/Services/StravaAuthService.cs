@@ -1,9 +1,9 @@
-﻿using System.Diagnostics;
+﻿using StravaWinForm.Models;
+using System.Diagnostics;
 using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
-using StravaWinForm.Models;
 
 namespace StravaWinForm.Services
 {
@@ -17,8 +17,9 @@ namespace StravaWinForm.Services
         // setting an empty JsonSerializerOptions to avoid repeated creation
         private static readonly JsonSerializerOptions JsonOptions = new()
         {
-           
+            // Empty - using defaults is sufficient for our token serialization needs
         };
+
 
         // constructor with parameters for client ID, secret, and redirect URI
         public StravaAuthService(string clientId, string clientSecret, string redirectUri)
@@ -43,20 +44,21 @@ namespace StravaWinForm.Services
             listener.Start();
 
             try
-            {   //asking browser to open the authorization URL, which will redirect back to our listener with the code
+            {   //start a new process to open the default browser with the authorization URL,
+                //which will prompt the user to authorize the app and redirect back to our listener with the code
                 Process.Start(new ProcessStartInfo(authUrl) { UseShellExecute = true });
 
                 // Wait for the incoming request with the authorization code, and handle cancellation
                 HttpListenerContext context = await listener.GetContextAsync().WaitAsync(cancellationToken);
-                
+
                 string? error = context.Request.QueryString["error"];
                 if (!string.IsNullOrEmpty(error))
                 {
                     throw new Exception($"Authorization failed: {error}");
                 }
-                
+
                 string? code = context.Request.QueryString["code"];
-                
+
                 return code ?? throw new Exception("No authorization code received");
             }
             finally
@@ -140,7 +142,7 @@ namespace StravaWinForm.Services
             return tokens.access_token;
         }
 
-        
+
         private async Task SaveTokensAsync(StravaTokenResponse? tokens)
         {
             if (tokens == null) return;
@@ -163,7 +165,7 @@ namespace StravaWinForm.Services
             catch (Exception ex)
             {
                 Debug.WriteLine($"Failed to save tokens: {ex.Message}");
-                
+
             }
         }
 
@@ -184,9 +186,9 @@ namespace StravaWinForm.Services
                     encryptedData,
                     null,
                     DataProtectionScope.CurrentUser);
-                
+
                 var json = Encoding.UTF8.GetString(data);
-                Debug.WriteLine($"Loaded tokens: {json}"); 
+                Debug.WriteLine($"Loaded tokens: {json}");
 
 
                 return JsonSerializer.Deserialize<StravaTokenResponse>(json, JsonOptions);
