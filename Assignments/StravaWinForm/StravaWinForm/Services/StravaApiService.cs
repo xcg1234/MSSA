@@ -233,7 +233,7 @@ namespace StravaWinForm.Services
                                 stats.RunMiles += miles;
                                 stats.RunCount++;
                             }
-                            else if (activity.type == "Ride")
+                            else if (activity.type == "Ride" || activity.type == "VirtualRide")
                             {
                                 stats.BikeMiles += miles;
                                 stats.BikeCount++;
