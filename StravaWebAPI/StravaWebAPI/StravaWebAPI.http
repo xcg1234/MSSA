@@ -1,0 +1,26 @@
+@StravaWebAPI_HostAddress = https://localhost:7068
+
+GET {{StravaWebAPI_HostAddress}}/api/strava/auth/url
+Accept: application/json
+
+###
+
+GET {{StravaWebAPI_HostAddress}}/api/strava/auth/status
+Accept: application/json
+
+###
+
+GET {{StravaWebAPI_HostAddress}}/api/strava/activities?count=5
+Accept: application/json
+
+###
+
+GET {{StravaWebAPI_HostAddress}}/api/strava/yearly-comparison
+Accept: application/json
+
+###
+
+GET {{StravaWebAPI_HostAddress}}/api/strava/personal-records
+Accept: application/json
+
+###
