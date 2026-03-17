@@ -1,4 +1,6 @@
-
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using StravaWebAPI.Data;
 using StravaWebAPI.Models;
 using StravaWebAPI.Services;
 
@@ -10,8 +12,28 @@ namespace StravaWebAPI
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+                                  ?? throw new InvalidOperationException("Connection string 'DefaultConnection' is missing.");
+
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
+
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseSqlServer(connectionString));
+
+            builder.Services.AddIdentityCore<ApplicationUser>()
+                .AddRoles<IdentityRole>()
+                .AddEntityFrameworkStores<AppDbContext>()
+                .AddSignInManager()
+                .AddDefaultTokenProviders();
+
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
+                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
+            }).AddIdentityCookies();
+
+            builder.Services.AddAuthorization();
 
             builder.Services.Configure<StravaOptions>(builder.Configuration.GetSection("Strava"));
             builder.Services.AddHttpClient();
@@ -42,6 +64,7 @@ namespace StravaWebAPI
 
             app.UseHttpsRedirection();
             app.UseCors("ReactApp");
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllers();

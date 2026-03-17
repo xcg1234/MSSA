@@ -1,5 +1,5 @@
 using System.Text.Json;
-using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using StravaWebAPI.Models;
 
@@ -7,23 +7,20 @@ namespace StravaWebAPI.Services
 {
     public class StravaAuthService : IStravaAuthService
     {
-        private const string TokenFilePath = "strava_tokens.dat";
+        private const string LocalBootstrapUserEmail = "local@stravaapp.dev";
 
         private readonly StravaOptions _options;
         private readonly IHttpClientFactory _httpClientFactory;
-        private readonly IDataProtector _protector;
-        private readonly string _tokenFileAbsolutePath;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public StravaAuthService(
             IOptions<StravaOptions> options,
             IHttpClientFactory httpClientFactory,
-            IDataProtectionProvider dataProtectionProvider,
-            IWebHostEnvironment env)
+            UserManager<ApplicationUser> userManager)
         {
             _options = options.Value;
             _httpClientFactory = httpClientFactory;
-            _protector = dataProtectionProvider.CreateProtector("StravaWebAPI.Tokens");
-            _tokenFileAbsolutePath = Path.Combine(env.ContentRootPath, TokenFilePath);
+            _userManager = userManager;
         }
 
         public string GetAuthorizationUrl()
@@ -113,43 +110,72 @@ namespace StravaWebAPI.Services
 
         public Task ClearTokensAsync()
         {
-            if (File.Exists(_tokenFileAbsolutePath))
-            {
-                File.Delete(_tokenFileAbsolutePath);
-            }
-
-            return Task.CompletedTask;
+            return SaveTokensAsync(null);
         }
 
         private async Task SaveTokensAsync(StravaTokenResponse? tokens)
         {
-            if (tokens == null)
+            var user = await GetOrCreateLocalUserAsync();
+            if (user == null)
             {
                 return;
             }
 
-            var json = JsonSerializer.Serialize(tokens);
-            var protectedPayload = _protector.Protect(json);
-            await File.WriteAllTextAsync(_tokenFileAbsolutePath, protectedPayload);
+            if (tokens == null)
+            {
+                user.StravaAccessToken = null;
+                user.StravaRefreshToken = null;
+                user.StravaTokenExpiresAtUtc = null;
+            }
+            else
+            {
+                user.StravaAccessToken = tokens.access_token;
+                user.StravaRefreshToken = tokens.refresh_token;
+                user.StravaTokenExpiresAtUtc = DateTimeOffset
+                    .FromUnixTimeSeconds(tokens.expires_at)
+                    .UtcDateTime;
+            }
+
+            await _userManager.UpdateAsync(user);
         }
 
         private async Task<StravaTokenResponse?> LoadTokensAsync()
         {
-            if (!File.Exists(_tokenFileAbsolutePath))
+            var user = await GetOrCreateLocalUserAsync();
+            if (user == null || string.IsNullOrWhiteSpace(user.StravaAccessToken))
             {
                 return null;
             }
 
-            try
+            var expiresAt = user.StravaTokenExpiresAtUtc ?? DateTime.UtcNow;
+            var expiresAtUnix = new DateTimeOffset(DateTime.SpecifyKind(expiresAt, DateTimeKind.Utc)).ToUnixTimeSeconds();
+
+            return new StravaTokenResponse
             {
-                var protectedPayload = await File.ReadAllTextAsync(_tokenFileAbsolutePath);
-                var json = _protector.Unprotect(protectedPayload);
-                return JsonSerializer.Deserialize<StravaTokenResponse>(json);
-            }
-            catch
+                access_token = user.StravaAccessToken,
+                refresh_token = user.StravaRefreshToken ?? string.Empty,
+                expires_at = expiresAtUnix,
+                expires_in = (int)Math.Max(0, expiresAtUnix - DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+            };
+        }
+
+        private async Task<ApplicationUser?> GetOrCreateLocalUserAsync()
+        {
+            var user = await _userManager.FindByEmailAsync(LocalBootstrapUserEmail);
+            if (user != null)
             {
-                return null;
+                return user;
             }
+
+            user = new ApplicationUser
+            {
+                UserName = LocalBootstrapUserEmail,
+                Email = LocalBootstrapUserEmail,
+                EmailConfirmed = true
+            };
+
+            var createResult = await _userManager.CreateAsync(user);
+            return createResult.Succeeded ? user : null;
         }
     }
 }
