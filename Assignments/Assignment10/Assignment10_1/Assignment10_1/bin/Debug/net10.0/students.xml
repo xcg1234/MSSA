@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ArrayOfStudent xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Student>
+    <Id>1</Id>
+    <GPA>3.0</GPA>
+    <Name>John Doe</Name>
+    <Major>CS</Major>
+  </Student>
+  <Student>
+    <Id>2</Id>
+    <GPA>3.5</GPA>
+    <Name>Jane Doe</Name>
+    <Major>Math</Major>
+  </Student>
+  <Student>
+    <Id>3</Id>
+    <GPA>2.5</GPA>
+    <Name>Jim Doe</Name>
+    <Major>CS</Major>
+  </Student>
+  <Student>
+    <Id>4</Id>
+    <GPA>3.8</GPA>
+    <Name>Jill Doe</Name>
+    <Major>Math</Major>
+  </Student>
+</ArrayOfStudent>
