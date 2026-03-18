@@ -1,6 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 using StravaWebAPI.Models;
 
 namespace StravaWebAPI.Services
@@ -8,11 +8,12 @@ namespace StravaWebAPI.Services
     public class StravaApiService(
         IStravaAuthService authService, 
         IHttpClientFactory httpClientFactory,
-        IWebHostEnvironment env) : IStravaApiService
+        IMemoryCache memoryCache) : IStravaApiService
     {
         private readonly IStravaAuthService _authService = authService;
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
-        private readonly string _recordsFilePath = Path.Combine(env.ContentRootPath, "personal_records_cache.json");
+        private readonly IMemoryCache _memoryCache = memoryCache;
+        private const string CacheKey = "PersonalRecordsCache_Static_User";
 
         public async Task<List<StravaActivity>> GetActivitiesAsync(int count = 5)
         {
@@ -71,7 +72,7 @@ namespace StravaWebAPI.Services
                 throw new InvalidOperationException("No valid access token. Please authorize first.");
             }
 
-            var cache = await LoadRecordsCacheAsync() ?? new PersonalRecordsCache();
+            var cache = await LoadRecordsCacheAsync();
 
             List<StravaActivity> newActivities;
 
@@ -94,12 +95,12 @@ namespace StravaWebAPI.Services
                     .Max(activity => new DateTimeOffset(activity.start_date).ToUnixTimeSeconds());
 
                 cache.LastSyncTimestamp = Math.Max(cache.LastSyncTimestamp, latestActivityTimestamp);
-                await SaveRecordsCacheAsync(cache);
+                SaveRecordsCache(cache);
             }
             else if (cache.LastSyncTimestamp == 0)
             {
                 cache.LastSyncTimestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
-                await SaveRecordsCacheAsync(cache);
+                SaveRecordsCache(cache);
             }
 
             return cache.Records;
@@ -314,28 +315,15 @@ namespace StravaWebAPI.Services
             return client;
         }
         
-        private async Task<PersonalRecordsCache?> LoadRecordsCacheAsync()
+        private Task<PersonalRecordsCache> LoadRecordsCacheAsync()
         {
-            if (!File.Exists(_recordsFilePath))
-            {
-                return null;
-            }
-
-            try
-            {
-                var json = await File.ReadAllTextAsync(_recordsFilePath);
-                return JsonSerializer.Deserialize<PersonalRecordsCache>(json);
-            }
-            catch
-            {
-                return null;
-            }
+            var cache = _memoryCache.Get<PersonalRecordsCache>(CacheKey) ?? new PersonalRecordsCache();
+            return Task.FromResult(cache);
         }
 
-        private async Task SaveRecordsCacheAsync(PersonalRecordsCache cache)
+        private void SaveRecordsCache(PersonalRecordsCache cache)
         {
-            var json = JsonSerializer.Serialize(cache);
-            await File.WriteAllTextAsync(_recordsFilePath, json);
+            _memoryCache.Set(CacheKey, cache, TimeSpan.FromHours(24));
         }
 
         private class PersonalRecordsCache
