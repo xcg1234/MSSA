@@ -1,0 +1,4 @@
+code First DB design:
+1. Install libraries
+2. Adding models, setup relationship
+3. Add DbContext class.

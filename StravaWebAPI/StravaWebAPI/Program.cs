@@ -9,7 +9,8 @@ namespace StravaWebAPI
     public class Program
     {
         public static void Main(string[] args)
-        {
+        {   
+            //https://learn.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-10.0
             var builder = WebApplication.CreateBuilder(args);
 
             var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
