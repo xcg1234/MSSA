@@ -1,0 +1,34 @@
+﻿<Window x:Class="Mod9ProductDbApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Mod9ProductDbApp"
+        mc:Ignorable="d"
+        Title="MainWindow" Height="450" Width="800">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="60"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+        <Label Grid.Row="0" HorizontalAlignment="Center" Content="Books Inventory" FontSize="20" FontFamily="Book Antiqua" Foreground="BlueViolet" VerticalAlignment="Center" BorderBrush="Orange"></Label>
+
+        <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,6">
+            <Button Content="Add New" Width="100" Margin="5" Click="AddBook_Click" />
+            <Button Content="Save" Width="100" Margin="5" Click="SaveBooks_Click" />
+            <Button Content="Delete Selected" Width="120" Margin="5" Click="DeleteBook_Click" />
+            <Button Content="Refresh" Width="100" Margin="5" Click="RefreshBooks_Click" />
+        </StackPanel>
+
+        <DataGrid Name ="BookGrid" Grid.Row="2" AutoGenerateColumns="False" Margin="5" BorderBrush="Orange" BorderThickness="3" CanUserAddRows="False" IsReadOnly="False">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="ISBN" Binding="{Binding ISBN, UpdateSourceTrigger=PropertyChanged}" Width="140" />
+                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="*" />
+                <DataGridTextColumn Header="Author Name" Binding="{Binding AuthorName}" Width="180" />
+                <DataGridTextColumn Header="Description" Binding="{Binding Description}" Width="2*" />
+            </DataGrid.Columns>
+        </DataGrid>
+    
+    </Grid>
+</Window>
