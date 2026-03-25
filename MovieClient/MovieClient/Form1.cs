@@ -180,7 +180,7 @@ namespace MovieClient
         private void btn_GetWeather(object sender, EventArgs e)
         {
             var weatherClient = new HttpClient();
-            weatherClient.BaseAddress = new Uri("https://api.tomorrow.io/v4/weather/realtime?location=10004%20US&apikey=REMOVED");
+            weatherClient.BaseAddress = new Uri("the url");
             var response = weatherClient.GetAsync(weatherClient.BaseAddress).Result;
             Root? root = response.Content.ReadFromJsonAsync<Root>().Result;
             if (response.IsSuccessStatusCode && root != null)
