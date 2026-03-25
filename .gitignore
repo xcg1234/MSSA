@@ -173,3 +173,8 @@ StravaWebAPI/.github/copilot-instructions.md
 /Mod9ProductDbApp/.vs
 /Mod9ProductDbApp/Mod9ProductDbApp/bin
 /Mod9ProductDbApp/Mod9ProductDbApp/obj
+/MovieClient/.vs
+/webapi/.vs
+/webapi/webapi/obj
+/webapi/webapi/bin
+/MovieClient/MovieClient/obj
