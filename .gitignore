@@ -178,3 +178,4 @@ StravaWebAPI/.github/copilot-instructions.md
 /webapi/webapi/obj
 /webapi/webapi/bin
 /MovieClient/MovieClient/obj
+MovieClient/replacements.txt
