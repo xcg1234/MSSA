@@ -43,6 +43,23 @@ namespace StravaWebAPI.Controllers
             }
         }
 
+        [HttpGet("monthly-mileage-comparison")]
+        public async Task<IActionResult> GetMonthlyMileageComparison()
+        {
+            try
+            {
+                return Ok(await _apiService.GetMonthlyMileageComparisonAsync());
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Unauthorized(new { error = ex.Message });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
         [HttpGet("personal-records")]
         public async Task<IActionResult> GetPersonalRecords()
         {

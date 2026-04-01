@@ -24,16 +24,10 @@ namespace StravaWebAPI
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            builder.Services.AddHttpClient("ServerAPI", client =>
-            {
-                client.BaseAddress = new Uri(builder.Configuration["ServerBaseAddress"] ?? "https://localhost:7266/");
-            });
-            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
+            builder.Services.AddHttpClient();
 
             builder.Services.Configure<StravaOptions>(builder.Configuration.GetSection("Strava"));
-            // HttpClient is configured above for same-origin API calls from Blazor components.
             builder.Services.AddDataProtection();
-            builder.Services.AddHttpContextAccessor();
             builder.Services.AddMemoryCache();
 
             builder.Services.AddScoped<IStravaAuthService, StravaAuthService>();

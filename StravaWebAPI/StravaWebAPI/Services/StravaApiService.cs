@@ -1,6 +1,5 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using StravaWebAPI.Models;
 
@@ -9,13 +8,11 @@ namespace StravaWebAPI.Services
     public class StravaApiService(
         IStravaAuthService authService, 
         IHttpClientFactory httpClientFactory,
-        IMemoryCache memoryCache,
-        IHttpContextAccessor httpContextAccessor) : IStravaApiService
+        IMemoryCache memoryCache) : IStravaApiService
     {
         private readonly IStravaAuthService _authService = authService;
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly IMemoryCache _memoryCache = memoryCache;
-        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<List<StravaActivity>> GetActivitiesAsync(int count = 5)
         {
@@ -52,7 +49,7 @@ namespace StravaWebAPI.Services
             var currentYearKey = currentYear.ToString();
             var lastYearKey = lastYear.ToString();
 
-            var cacheKey = $"YearlyStatsCache:{_httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "anonymous"}";
+            var cacheKey = "YearlyStatsCache";
             if (_memoryCache.TryGetValue(cacheKey, out Dictionary<string, YearlyStats>? cachedResult))
             {
                 if (cachedResult != null)
@@ -71,6 +68,47 @@ namespace StravaWebAPI.Services
             var lastYearTask = FetchYearActivities(accessToken, lastYear, result[lastYearKey]);
 
             await Task.WhenAll(currentYearTask, lastYearTask);
+
+            _memoryCache.Set(cacheKey, result, TimeSpan.FromHours(12));
+
+            return result;
+        }
+
+        public async Task<MonthlyMileageComparison> GetMonthlyMileageComparisonAsync()
+        {
+            var accessToken = await _authService.GetValidAccessTokenAsync();
+            if (string.IsNullOrWhiteSpace(accessToken))
+            {
+                throw new InvalidOperationException("No valid access token. Please authorize first.");
+            }
+
+            var currentYear = DateTime.Now.Year;
+            var lastYear = currentYear - 1;
+
+            var cacheKey = $"MonthlyMileageComparison:{currentYear}";
+            if (_memoryCache.TryGetValue(cacheKey, out MonthlyMileageComparison? cachedResult) && cachedResult != null)
+            {
+                return cachedResult;
+            }
+
+            var currentRunMiles = new double[12];
+            var currentRideMiles = new double[12];
+            var lastRunMiles = new double[12];
+            var lastRideMiles = new double[12];
+
+            var currentYearTask = FetchYearMonthlyMiles(accessToken, currentYear, currentRunMiles, currentRideMiles);
+            var lastYearTask = FetchYearMonthlyMiles(accessToken, lastYear, lastRunMiles, lastRideMiles);
+            await Task.WhenAll(currentYearTask, lastYearTask);
+
+            var result = new MonthlyMileageComparison
+            {
+                CurrentYear = currentYear,
+                LastYear = lastYear,
+                RunCurrentYearMiles = currentRunMiles.Select(m => Math.Round(m, 2)).ToList(),
+                RunLastYearMiles = lastRunMiles.Select(m => Math.Round(m, 2)).ToList(),
+                RideCurrentYearMiles = currentRideMiles.Select(m => Math.Round(m, 2)).ToList(),
+                RideLastYearMiles = lastRideMiles.Select(m => Math.Round(m, 2)).ToList()
+            };
 
             _memoryCache.Set(cacheKey, result, TimeSpan.FromHours(12));
 
@@ -179,7 +217,8 @@ namespace StravaWebAPI.Services
                     Date = fastestRide.start_date_local,
                     Value = $"{(fastestRide.average_speed * 2.23694):F2} mph",
                     Type = "Ride",
-                    Duration = fastestRide.Duration
+                    Duration = fastestRide.Duration,
+                    Distance = $"{(fastestRide.distance * 0.000621371):F2} mi" 
                 };
             }
 
@@ -195,6 +234,58 @@ namespace StravaWebAPI.Services
                     Type = mostElevation.type,
                     Duration = mostElevation.Duration
                 };
+            }
+        }
+
+        private async Task FetchYearMonthlyMiles(string accessToken, int year, double[] runMiles, double[] rideMiles)
+        {
+            using var client = CreateAuthorizedClient(accessToken);
+
+            var startDate = new DateTime(year, 1, 1);
+            var endDate = new DateTime(year, 12, 31, 23, 59, 59);
+
+            long afterTimestamp = ((DateTimeOffset)startDate).ToUnixTimeSeconds();
+            long beforeTimestamp = ((DateTimeOffset)endDate).ToUnixTimeSeconds();
+
+            int page = 1;
+            var hasMorePages = true;
+
+            while (hasMorePages)
+            {
+                var url = $"https://www.strava.com/api/v3/athlete/activities?after={afterTimestamp}&before={beforeTimestamp}&per_page=200&page={page}";
+                var response = await client.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    break;
+                }
+
+                var json = await response.Content.ReadAsStringAsync();
+                var activities = JsonSerializer.Deserialize<List<StravaActivity>>(json);
+
+                if (activities == null || activities.Count == 0)
+                {
+                    hasMorePages = false;
+                }
+                else
+                {
+                    foreach (var activity in activities)
+                    {
+                        var monthIndex = activity.start_date_local.Month - 1;
+                        var miles = activity.distance * 0.000621371;
+
+                        if (activity.type == "Run")
+                        {
+                            runMiles[monthIndex] += miles;
+                        }
+                        else if (activity.type == "Ride" || activity.type == "VirtualRide")
+                        {
+                            rideMiles[monthIndex] += miles;
+                        }
+                    }
+
+                    page++;
+                }
             }
         }
 
@@ -339,13 +430,9 @@ namespace StravaWebAPI.Services
             _memoryCache.Set(GetCacheKey(), cache, TimeSpan.FromHours(24));
         }
 
-        private string GetCacheKey()
+        private static string GetCacheKey(string prefix = "PersonalRecordsCache")
         {
-            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value
-                         ?? _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
-                         ?? "anonymous";
-
-            return $"PersonalRecordsCache:{userId}";
+            return prefix;
         }
 
         private class PersonalRecordsCache
