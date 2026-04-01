@@ -1,5 +1,6 @@
 using System.Net.Http.Headers;
 using System.Text.Json;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Memory;
 using StravaWebAPI.Models;
 
@@ -8,12 +9,13 @@ namespace StravaWebAPI.Services
     public class StravaApiService(
         IStravaAuthService authService, 
         IHttpClientFactory httpClientFactory,
-        IMemoryCache memoryCache) : IStravaApiService
+        IMemoryCache memoryCache,
+        IHttpContextAccessor httpContextAccessor) : IStravaApiService
     {
         private readonly IStravaAuthService _authService = authService;
         private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
         private readonly IMemoryCache _memoryCache = memoryCache;
-        private const string CacheKey = "PersonalRecordsCache_Static_User";
+        private readonly IHttpContextAccessor _httpContextAccessor = httpContextAccessor;
 
         public async Task<List<StravaActivity>> GetActivitiesAsync(int count = 5)
         {
@@ -50,6 +52,15 @@ namespace StravaWebAPI.Services
             var currentYearKey = currentYear.ToString();
             var lastYearKey = lastYear.ToString();
 
+            var cacheKey = $"YearlyStatsCache:{_httpContextAccessor.HttpContext?.User?.Identity?.Name ?? "anonymous"}";
+            if (_memoryCache.TryGetValue(cacheKey, out Dictionary<string, YearlyStats>? cachedResult))
+            {
+                if (cachedResult != null)
+                {
+                    return cachedResult;
+                }
+            }
+
             var result = new Dictionary<string, YearlyStats>
             {
                 [currentYearKey] = new YearlyStats(),
@@ -60,6 +71,8 @@ namespace StravaWebAPI.Services
             var lastYearTask = FetchYearActivities(accessToken, lastYear, result[lastYearKey]);
 
             await Task.WhenAll(currentYearTask, lastYearTask);
+
+            _memoryCache.Set(cacheKey, result, TimeSpan.FromHours(12));
 
             return result;
         }
@@ -296,7 +309,7 @@ namespace StravaWebAPI.Services
                             stats.RunMiles += miles;
                             stats.RunCount++;
                         }
-                        else if (activity.type == "Ride")
+                        else if (activity.type == "Ride" || activity.type == "VirtualRide")
                         {
                             stats.BikeMiles += miles;
                             stats.BikeCount++;
@@ -317,13 +330,22 @@ namespace StravaWebAPI.Services
         
         private Task<PersonalRecordsCache> LoadRecordsCacheAsync()
         {
-            var cache = _memoryCache.Get<PersonalRecordsCache>(CacheKey) ?? new PersonalRecordsCache();
+            var cache = _memoryCache.Get<PersonalRecordsCache>(GetCacheKey()) ?? new PersonalRecordsCache();
             return Task.FromResult(cache);
         }
 
         private void SaveRecordsCache(PersonalRecordsCache cache)
         {
-            _memoryCache.Set(CacheKey, cache, TimeSpan.FromHours(24));
+            _memoryCache.Set(GetCacheKey(), cache, TimeSpan.FromHours(24));
+        }
+
+        private string GetCacheKey()
+        {
+            var userId = _httpContextAccessor.HttpContext?.User?.FindFirst("sub")?.Value
+                         ?? _httpContextAccessor.HttpContext?.User?.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value
+                         ?? "anonymous";
+
+            return $"PersonalRecordsCache:{userId}";
         }
 
         private class PersonalRecordsCache

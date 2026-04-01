@@ -1,0 +1,55 @@
+@page "/"
+@using StravaWebAPI.Services
+@inject IStravaAuthService AuthService
+@inject NavigationManager Nav
+
+<h2 class="card">Home</h2>
+
+<section class="card">
+    <p>This app is single-user. Connect your Strava account to view your data.</p>
+    <button @onclick="ConnectStrava" disabled="@_loading">@(_loading ? "Loading..." : "Connect to Strava")</button>
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="error card">@_error</div>
+    }
+</section>
+
+@code {
+    private bool _loading;
+    private string _error = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (await AuthService.IsAuthorizedAsync())
+        {
+            Nav.NavigateTo("/dashboard", replace: true);
+        }
+    }
+
+    private void ConnectStrava()
+    {
+        _loading = true;
+        _error = string.Empty;
+
+        try
+        {
+            var url = AuthService.GetAuthorizationUrl();
+            if (string.IsNullOrWhiteSpace(url))
+            {
+                _error = "Authorization URL not found.";
+                return;
+            }
+
+            Nav.NavigateTo(url, forceLoad: true);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

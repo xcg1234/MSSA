@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using StravaWebAPI.Data;
 using StravaWebAPI.Models;
@@ -19,42 +18,26 @@ namespace StravaWebAPI
             builder.Services.AddControllers();
             builder.Services.AddOpenApi();
 
+            builder.Services.AddRazorPages();
+            builder.Services.AddServerSideBlazor();
+
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(connectionString));
 
-            builder.Services.AddIdentityCore<ApplicationUser>()
-                .AddRoles<IdentityRole>()
-                .AddEntityFrameworkStores<AppDbContext>()
-                .AddSignInManager()
-                .AddDefaultTokenProviders();
-
-            builder.Services.AddAuthentication(options =>
+            builder.Services.AddHttpClient("ServerAPI", client =>
             {
-                options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
-                options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
-            }).AddIdentityCookies();
-
-            builder.Services.AddAuthorization();
+                client.BaseAddress = new Uri(builder.Configuration["ServerBaseAddress"] ?? "https://localhost:7266/");
+            });
+            builder.Services.AddScoped(sp => sp.GetRequiredService<IHttpClientFactory>().CreateClient("ServerAPI"));
 
             builder.Services.Configure<StravaOptions>(builder.Configuration.GetSection("Strava"));
-            builder.Services.AddHttpClient();
+            // HttpClient is configured above for same-origin API calls from Blazor components.
             builder.Services.AddDataProtection();
+            builder.Services.AddHttpContextAccessor();
+            builder.Services.AddMemoryCache();
 
             builder.Services.AddScoped<IStravaAuthService, StravaAuthService>();
             builder.Services.AddScoped<IStravaApiService, StravaApiService>();
-
-            var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>()
-                                 ?? ["http://localhost:5173", "http://localhost:3000"];
-
-            builder.Services.AddCors(options =>
-            {
-                options.AddPolicy("ReactApp", policy =>
-                {
-                    policy.WithOrigins(allowedOrigins)
-                          .AllowAnyHeader()
-                          .AllowAnyMethod();
-                });
-            });
 
             var app = builder.Build();
 
@@ -64,11 +47,13 @@ namespace StravaWebAPI
             }
 
             app.UseHttpsRedirection();
-            app.UseCors("ReactApp");
-            app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseStaticFiles();
+            app.UseRouting();
 
             app.MapControllers();
+            app.MapRazorPages();
+            app.MapBlazorHub();
+            app.MapFallbackToPage("/_Host");
             app.Run();
         }
     }

@@ -34,11 +34,7 @@ namespace StravaWebAPI.Controllers
                 return BadRequest(new { error = "Failed to exchange authorization code for tokens." });
             }
 
-            return Ok(new
-            {
-                message = "Strava authorized successfully.",
-                expiresAt = tokens.expires_at
-            });
+            return Redirect("/dashboard");
         }
 
         [HttpGet("status")]

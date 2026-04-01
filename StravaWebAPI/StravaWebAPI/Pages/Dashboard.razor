@@ -1,0 +1,296 @@
+@page "/dashboard"
+@using StravaWebAPI.Services
+@using StravaWebAPI.Models
+@inject IStravaAuthService AuthService
+@inject IStravaApiService ApiService
+@inject NavigationManager Nav
+
+<h2 class="card">Dashboard</h2>
+
+<section class="card">
+    @if (!_stravaAuthorized)
+    {
+        <p>Not connected to Strava.</p>
+        <button @onclick="ConnectStrava" disabled="@_loading">Connect to Strava</button>
+    }
+    else
+    {
+        <button class="danger" @onclick="Disconnect" disabled="@_loading">Disconnect</button>
+    }
+
+    @if (!string.IsNullOrWhiteSpace(_error))
+    {
+        <div class="error card" style="margin-top: 10px;">@_error</div>
+    }
+</section>
+
+@if (_stravaAuthorized)
+{
+    <div class="card" style="margin-bottom: 20px;">
+        <div style="display: flex; gap: 10px; border-bottom: 1px solid #ccc; padding-bottom: 10px; margin-bottom: 10px;">
+            <button class="@(_currentTab == "recent" ? "active" : "secondary")" @onclick='() => SetTab("recent")'>Recent Activities</button>
+            <button class="@(_currentTab == "yearly" ? "active" : "secondary")" @onclick='() => SetTab("yearly")'>Yearly Comparison</button>
+            <button class="@(_currentTab == "records" ? "active" : "secondary")" @onclick='() => SetTab("records")'>Personal Records</button>
+        </div>
+
+        @if (_currentTab == "recent")
+        {
+            <section>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3>Recent Activities</h3>
+                    <button @onclick="LoadActivities" disabled="@_loadingActivities">
+                        @(_loadingActivities ? "Loading..." : "Fetch Recent")
+                    </button>
+                </div>
+                @if (_activities == null)
+                {
+                    <p class="muted">Click "Fetch Recent" to load.</p>
+                }
+                else if (_activities.Count == 0)
+                {
+                    <p class="muted">No activities found.</p>
+                }
+                else
+                {
+                    <ul class="activity-list">
+                        @foreach (var a in _activities)
+                        {
+                            <li>
+                                <strong>@a.name</strong>
+                                <span>@a.type</span>
+                                <span>@a.DistanceInMiles</span>
+                                <span>@a.Duration</span>
+                                <span>@a.start_date_local.ToString("yyyy-MM-dd")</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </section>
+        }
+        else if (_currentTab == "yearly")
+        {
+            <section>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3>Yearly Comparison</h3>
+                    <button @onclick="LoadYearly" disabled="@_loadingYearly">
+                        @(_loadingYearly ? "Loading..." : "Fetch Yearly Stats")
+                    </button>
+                </div>
+                @if (_yearly == null || _yearly.Count == 0)
+                {
+                    <p class="muted">Click "Fetch Yearly Stats" to load.</p>
+                }
+                else
+                {
+                    <div class="grid">
+                        @foreach (var entry in _yearly.OrderByDescending(kv => kv.Key))
+                        {
+                            <div class="subcard">
+                                <strong>@entry.Key</strong>
+                                <div>Run: @entry.Value.RunMiles.ToString("F2") miles (@entry.Value.RunCount activities) </div>
+                                <div>Ride: @entry.Value.BikeMiles.ToString("F2") miles (@entry.Value.BikeCount activities)</div>
+                            </div>
+                        }
+                    </div>
+                }
+            </section>
+        }
+        else if (_currentTab == "records")
+        {
+            <section>
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                    <h3>Personal Records</h3>
+                    <button @onclick="LoadRecords" disabled="@_loadingRecords">
+                        @(_loadingRecords ? "Loading..." : "Fetch Records")
+                    </button>
+                </div>
+                @if (_records == null)
+                {
+                    <p class="muted">Click "Fetch Records" to load.</p>
+                }
+                else
+                {
+                    <div class="stack">
+                        <div class="subcard">
+                            <strong>Longest Run</strong>
+                            @if (_records.LongestRun != null)
+                            {
+                                <div>@_records.LongestRun.Value (@_records.LongestRun.Duration)</div>
+                                <div class="muted">@_records.LongestRun.Name on @_records.LongestRun.Date.ToString("yyyy-MM-dd")</div>
+                            }
+                            else
+                            {
+                                <div>-</div>
+                            }
+                        </div>
+                        <div class="subcard">
+                            <strong>Fastest Run Pace</strong>
+                            @if (_records.FastestRunPace != null)
+                            {
+                                <div>@_records.FastestRunPace.Value</div>
+                                <div class="muted">@_records.FastestRunPace.Name on @_records.FastestRunPace.Date.ToString("yyyy-MM-dd")</div>
+                            }
+                            else
+                            {
+                                <div>-</div>
+                            }
+                        </div>
+                        <div class="subcard">
+                            <strong>Longest Ride</strong>
+                            @if (_records.LongestRide != null)
+                            {
+                                <div>@_records.LongestRide.Value (@_records.LongestRide.Duration)</div>
+                                <div class="muted">@_records.LongestRide.Name on @_records.LongestRide.Date.ToString("yyyy-MM-dd")</div>
+                            }
+                            else
+                            {
+                                <div>-</div>
+                            }
+                        </div>
+                        <div class="subcard">
+                            <strong>Fastest Ride</strong>
+                            @if (_records.FastestRide != null)
+                            {
+                                <div>@_records.FastestRide.Value</div>
+                                <div class="muted">@_records.FastestRide.Name on @_records.FastestRide.Date.ToString("yyyy-MM-dd")</div>
+                            }
+                            else
+                            {
+                                <div>-</div>
+                            }
+                        </div>
+                        <div class="subcard">
+                            <strong>Most Elevation Gain</strong>
+                            @if (_records.MostElevationGain != null)
+                            {
+                                <div>@_records.MostElevationGain.Value (@_records.MostElevationGain.Type)</div>
+                                <div class="muted">@_records.MostElevationGain.Name on @_records.MostElevationGain.Date.ToString("yyyy-MM-dd")</div>
+                            }
+                            else
+                            {
+                                <div>-</div>
+                            }
+                        </div>
+                    </div>
+                }
+            </section>
+        }
+    </div>
+}
+
+@code {
+    private bool _loading;
+    private bool _loadingActivities;
+    private bool _loadingYearly;
+    private bool _loadingRecords;
+    private string _error = string.Empty;
+    private bool _stravaAuthorized;
+    private string _currentTab = "recent";
+
+    private List<StravaActivity>? _activities;
+    private Dictionary<string, YearlyStats>? _yearly;
+    private PersonalRecords? _records;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await RefreshAuthStatus();
+        if (!_stravaAuthorized)
+        {
+            Nav.NavigateTo("/", replace: true);
+        }
+    }
+
+    private void SetTab(string tab)
+    {
+        _currentTab = tab;
+    }
+
+    private async Task RefreshAuthStatus()
+    {
+        _stravaAuthorized = await AuthService.IsAuthorizedAsync();
+    }
+
+    private async Task LoadActivities()
+    {
+        _loadingActivities = true;
+        _error = string.Empty;
+        try
+        {
+            _activities = await ApiService.GetActivitiesAsync(10) ?? new();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loadingActivities = false;
+        }
+    }
+
+    private async Task LoadYearly()
+    {
+        _loadingYearly = true;
+        _error = string.Empty;
+        try
+        {
+            _yearly = await ApiService.GetYearlyComparisonAsync() ?? new();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loadingYearly = false;
+        }
+    }
+
+    private async Task LoadRecords()
+    {
+        _loadingRecords = true;
+        _error = string.Empty;
+        try
+        {
+            _records = await ApiService.GetPersonalRecordsAsync();
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loadingRecords = false;
+        }
+    }
+
+    private void ConnectStrava()
+    {
+        _error = string.Empty;
+        var url = AuthService.GetAuthorizationUrl();
+        if (string.IsNullOrWhiteSpace(url))
+        {
+            _error = "Authorization URL not found.";
+            return;
+        }
+        Nav.NavigateTo(url, forceLoad: true);
+    }
+
+    private async Task Disconnect()
+    {
+        _error = string.Empty;
+        try
+        {
+            await AuthService.ClearTokensAsync();
+            _stravaAuthorized = false;
+            _activities = null;
+            _yearly = null;
+            _records = null;
+            Nav.NavigateTo("/", replace: true);
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+    }
+}
