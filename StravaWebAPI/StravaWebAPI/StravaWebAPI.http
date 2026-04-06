@@ -1,4 +1,4 @@
-@StravaWebAPI_HostAddress = https://localhost:7068
+@StravaWebAPI_HostAddress = https://localhost:7266
 
 GET {{StravaWebAPI_HostAddress}}/api/strava/auth/url
 Accept: application/json
